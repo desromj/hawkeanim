@@ -13,8 +13,8 @@ public class Constants
     public static final Color BG_COLOR = Color.SKY;
     public static final Color PLATFORM_COLOR = Color.BLUE;
 
-    public static final float ACCEL_DUE_TO_GRAVITY = -98.1f;
-    public static final float KILL_LINE_Y = -400.0f;
+    public static final float GRAVITY = -20.0f;
+    public static final float KILL_PLANE = -400.0f;
 
     public static final float HAWKE_RADIUS = WORLD_WIDTH / 48.0f;
     public static final Color HAWKE_COLOR = Color.BROWN;
@@ -23,5 +23,6 @@ public class Constants
     public static final float HAWKE_DELAY_BETWEEN_FLAPS = 1.0f;
     public static final float HAWKE_IDLE_SPEED_THRESHOLD = 0.1f;
     public static final float HAWKE_WALK_SPEED = 400.0f;
-    public static final float HAWKE_RUN_SPEED = 1200.0f;
+    public static final float HAWKE_RUN_SPEED = 900.0f;
+    public static final float HAWKE_JUMP_IMPULSE = 640.0f;
 }

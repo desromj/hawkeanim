@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
@@ -18,6 +17,7 @@ public class Hawke
 {
     AnimationState animationState;
     Vector2 position, velocity;
+    Vector2 spawnPosition;
     private Vector2 lastPosition;
 
     boolean grounded, flapping;
@@ -33,51 +33,50 @@ public class Hawke
 
     public Hawke(float x, float y)
     {
-        this.position = new Vector2(x, y);
-        this.velocity = new Vector2();
-        this.lastPosition = new Vector2();
-        this.animationState = AnimationState.FALLING;
-        this.grounded = false;
-        this.flapping = false;
-        this.cannotFlapFor = 0.0f;
+        this.spawnPosition = new Vector2(x, y);
 
         this.batch = new SpriteBatch();
         this.font = new BitmapFont();
         this.font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         this.font.setColor(Constants.HAWKE_TEXT_COLOR);
         this.font.getData().setScale(Constants.HAWKE_TEXT_SCALE);
+
+        init();
+    }
+
+    public void init()
+    {
+        this.position = new Vector2(this.spawnPosition.x, this.spawnPosition.y);
+        this.lastPosition = new Vector2(this.spawnPosition.x, this.spawnPosition.y);
+        this.velocity = new Vector2();
+        this.animationState = AnimationState.FALLING;
+        this.grounded = false;
+        this.flapping = false;
+        this.cannotFlapFor = 0.0f;
     }
 
     public void update(float delta, Array<Platform> platforms)
     {
-        this.position.x += this.velocity.x * delta;
-        this.position.y += this.velocity.y * delta;
+        this.velocity.y += Constants.GRAVITY;
+        this.position.mulAdd(this.velocity, delta);
+
+        if (this.position.y < Constants.KILL_PLANE)
+            init();
 
         // Platform collision logic
-        boolean onPlatform = false;
-
         for (Platform platform: platforms)
         {
             if (this.hasCollided(platform))
             {
-                onPlatform = true;
                 this.grounded = true;
                 this.flapping = false;
 
                 // Constrain player to the top of the platform
-                this.position.y = platform.position.y + platform.height / 2.0f + Constants.HAWKE_RADIUS;
+                this.position.y = platform.top + Constants.HAWKE_RADIUS;
+                this.velocity.y = 0.0f;
                 break;
             }
         }
-
-        if (!onPlatform)
-            this.grounded = false;
-
-        // Make the player fall if they are not already grounded
-        if (this.grounded)
-            this.velocity.y = 0.0f;
-        else
-            this.velocity.y += Constants.ACCEL_DUE_TO_GRAVITY;
 
         // Check left/right movement keys for X velocity
         boolean running = (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
@@ -129,33 +128,21 @@ public class Hawke
 
     private boolean hasCollided(Platform platform)
     {
-        // First off, check the Y values - that we JUST fell onto the platform
-        float heightDiff = platform.height / 2.0f + Constants.HAWKE_RADIUS;
+        boolean left = false, right = false, middle = false;
 
-        // If we did NOT, return right away
-        if (!this.grounded
-            && !(this.lastPosition.y - platform.position.y > heightDiff
-                && this.position.y - platform.position.y < heightDiff))
+        if (this.lastPosition.y - Constants.HAWKE_RADIUS >= platform.top
+                && this.position.y - Constants.HAWKE_RADIUS < platform.top)
         {
-            return false;
+            float edgeLeeway = Constants.HAWKE_RADIUS / 2.0f;
+            float leftFoot = this.position.x - edgeLeeway;
+            float rightFoot = this.position.x + edgeLeeway;
+
+            left = (platform.left < leftFoot && platform.right > leftFoot);
+            right = (platform.left < rightFoot && platform.right > rightFoot);
+            middle = (platform.left > leftFoot && platform.right < rightFoot);
         }
 
-        // Otherwise proceed to X checks
-
-        // Check 1/2 of radius to the right of the platform
-        if (this.position.x - (platform.position.x + platform.width / 2.0f) < Constants.HAWKE_RADIUS / 2.0f)
-            return true;
-
-        // Check on top of the platform
-        if (this.position.x >= (platform.position.x - platform.width / 2.0f)
-                && this.position.x <= (platform.position.x + platform.width / 2.0f))
-            return true;
-
-        // Check 1/2 of radius to the left of the platform
-        if ((platform.position.x - platform.width / 2.0f) - this.position.x < Constants.HAWKE_RADIUS / 2.0f)
-            return true;
-
-        return false;
+        return left || right || middle;
     }
 
     public void render(ShapeRenderer renderer)
@@ -182,5 +169,15 @@ public class Hawke
     public void setVelocity(float x, float y)
     {
         this.velocity.set(x, y);
+    }
+
+    public void flap()
+    {
+        if (this.grounded)
+        {
+            this.grounded = false;
+            this.flapping = true;
+            this.velocity.y = Constants.HAWKE_JUMP_IMPULSE;
+        }
     }
 }

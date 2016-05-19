@@ -10,6 +10,7 @@ public class Platform
 {
     Vector2 position;
     float width, height;
+    float left, right, top, bottom;
 
     public Platform(Vector2 position, float width, float height)
     {
@@ -21,14 +22,19 @@ public class Platform
         this.position = new Vector2(x + width / 2.0f, y + height / 2.0f);
         this.width = width;
         this.height = height;
+
+        this.left = x;
+        this.right = x + width;
+        this.bottom = y;
+        this.top = y + height;
     }
 
     public void render(ShapeRenderer renderer)
     {
         renderer.setColor(Constants.PLATFORM_COLOR);
         renderer.rect(
-                this.position.x - this.width / 2.0f,
-                this.position.y - this.height / 2.0f,
+                this.left,
+                this.bottom,
                 this.width,
                 this.height
         );

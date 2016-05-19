@@ -1,6 +1,7 @@
 package com.greenbatgames.hawkeanim;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Camera;
@@ -41,7 +42,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         this.hawke = new Hawke(spawnPoint);
 
         // Init Platforms
-        platforms.add(new Platform(10.0f, 10.0f, 1600.0f, 80.0f));
+        platforms.add(new Platform(20.0f, 20.0f, 1600.0f, 80.0f));
         platforms.add(new Platform(800.0f, 420.0f, 540.0f, 40.0f));
 
         // Finalize
@@ -86,8 +87,12 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
     }
 
     @Override
-    public boolean keyDown(int keycode) {
-        return false;
+    public boolean keyDown(int keycode)
+    {
+        if (keycode == Input.Keys.Z)
+            hawke.flap();
+
+        return true;
     }
 
     @Override
