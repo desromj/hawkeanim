@@ -59,6 +59,7 @@ public class Hawke
     {
         this.velocity.y += Constants.GRAVITY;
         this.position.mulAdd(this.velocity, delta);
+        this.cannotFlapFor -= delta;
 
         if (this.position.y < Constants.KILL_PLANE)
             init();
@@ -70,6 +71,7 @@ public class Hawke
             {
                 this.grounded = true;
                 this.flapping = false;
+                this.cannotFlapFor = 0.0f;
 
                 // Constrain player to the top of the platform
                 this.position.y = platform.top + Constants.HAWKE_RADIUS;
@@ -93,7 +95,10 @@ public class Hawke
             else
                 this.velocity.x = -Constants.HAWKE_WALK_SPEED;
         } else {
-            this.velocity.x = 0.0f;
+            if (this.grounded)
+                this.velocity.x = 0.0f;
+            else
+                this.velocity.x *= Constants.HORIZONTAL_FALL_DAMPEN;
         }
 
         // Set what the next animation state should be
@@ -166,18 +171,14 @@ public class Hawke
         batch.end();
     }
 
-    public void setVelocity(float x, float y)
-    {
-        this.velocity.set(x, y);
-    }
-
     public void flap()
     {
-        if (this.grounded)
+        if (this.cannotFlapFor <= 0.0f)
         {
             this.grounded = false;
             this.flapping = true;
             this.velocity.y = Constants.HAWKE_JUMP_IMPULSE;
+            this.cannotFlapFor = Constants.HAWKE_DELAY_BETWEEN_FLAPS;
         }
     }
 }
