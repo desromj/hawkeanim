@@ -22,6 +22,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
     Viewport viewport;
     ShapeRenderer renderer;
     SpriteBatch batch;
+    ChaseCam chaseCam;
 
     Array<Platform> platforms;
     Hawke hawke;
@@ -42,6 +43,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         this.batch = new SpriteBatch();
         this.spawnPoint = new Vector2(80.0f, 160.0f);
         this.hawke = new Hawke(spawnPoint);
+        this.chaseCam = new ChaseCam(viewport.getCamera(), this.hawke);
 
         // Init Platforms
         platforms.add(new Platform(20.0f, 20.0f, 1600.0f, 80.0f));
@@ -58,6 +60,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
     {
         // TODO: Updates go here
         hawke.update(delta, platforms);
+        chaseCam.update(delta);
 
 
         // TODO: Then rendering logic

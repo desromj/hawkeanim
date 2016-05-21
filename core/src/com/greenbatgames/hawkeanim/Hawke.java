@@ -235,4 +235,9 @@ public class Hawke
             this.cannotFlapFor = Constants.HAWKE_DELAY_BETWEEN_FLAPS;
         }
     }
+
+    public Vector2 getPosition()
+    {
+        return this.position;
+    }
 }

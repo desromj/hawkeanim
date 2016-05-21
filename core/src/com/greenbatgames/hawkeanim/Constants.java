@@ -11,6 +11,10 @@ public class Constants
     public static final float WORLD_WIDTH = 1920.0f;
     public static final float WORLD_HEIGHT = WORLD_WIDTH * 9.0f / 16.0f;
 
+    public static final float CHASE_CAM_MOVE_SPEED = 1600.0f;
+    public static final float CHASE_CAM_X_LEEWAY = WORLD_WIDTH / 9.0f;
+    public static final float CHASE_CAM_Y_LEEWAY = WORLD_HEIGHT / 5.0f;
+
     public static final Color BG_COLOR = Color.SKY;
     public static final Color PLATFORM_COLOR = Color.BLUE;
 
