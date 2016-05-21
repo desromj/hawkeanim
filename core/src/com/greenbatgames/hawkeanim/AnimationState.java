@@ -9,6 +9,7 @@ public enum AnimationState
     WALKING("Walking"),
     RUNNING("Running"),
     FALLING("Falling"),
+    GLIDING("Gliding"),
     FLAPPING("Flap");
 
     private String label;

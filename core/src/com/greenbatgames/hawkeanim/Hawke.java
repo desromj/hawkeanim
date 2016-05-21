@@ -20,7 +20,7 @@ public class Hawke
     Vector2 spawnPosition;
     private Vector2 lastPosition;
 
-    boolean grounded, flapping;
+    boolean grounded, flapping, gliding;
     float cannotFlapFor;
 
     SpriteBatch batch;
@@ -52,12 +52,17 @@ public class Hawke
         this.animationState = AnimationState.FALLING;
         this.grounded = false;
         this.flapping = false;
+        this.gliding = false;
         this.cannotFlapFor = 0.0f;
     }
 
     public void update(float delta, Array<Platform> platforms)
     {
-        this.velocity.y += Constants.GRAVITY;
+        if (this.gliding)
+            this.velocity.y = Constants.GRAVITY * 2.5f;
+        else
+            this.velocity.y += Constants.GRAVITY;
+
         this.position.mulAdd(this.velocity, delta);
         this.cannotFlapFor -= delta;
 
@@ -71,6 +76,7 @@ public class Hawke
             {
                 this.grounded = true;
                 this.flapping = false;
+                this.gliding = false;
                 this.cannotFlapFor = 0.0f;
 
                 // Constrain player to the top of the platform
@@ -79,6 +85,11 @@ public class Hawke
                 break;
             }
         }
+
+        if (this.cannotFlapFor <= 0.0f && !this.grounded)
+            this.flapping = false;
+
+        this.gliding = !this.grounded && !this.flapping && Gdx.input.isKeyPressed(Input.Keys.Z);
 
         // Check left/right movement keys for X velocity
         boolean running = (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
@@ -97,8 +108,10 @@ public class Hawke
         } else {
             if (this.grounded)
                 this.velocity.x = 0.0f;
-            else
-                this.velocity.x *= Constants.HORIZONTAL_FALL_DAMPEN;
+            else {
+                if (!this.gliding)
+                    this.velocity.x *= Constants.HORIZONTAL_FALL_DAMPEN;
+            }
         }
 
         // Set what the next animation state should be
@@ -125,10 +138,14 @@ public class Hawke
                 return AnimationState.IDLE;
         }
 
-        if (this.flapping)
+        if (this.flapping) {
             return AnimationState.FLAPPING;
-        else
+        }
+        else {
+            if (Gdx.input.isKeyPressed(Input.Keys.Z))
+                return AnimationState.GLIDING;
             return AnimationState.FALLING;
+        }
     }
 
     private boolean hasCollided(Platform platform)
@@ -150,25 +167,24 @@ public class Hawke
         return left || right || middle;
     }
 
-    public void render(ShapeRenderer renderer)
+    public void renderShapes(ShapeRenderer renderer)
     {
         renderer.setColor(Constants.HAWKE_COLOR);
         renderer.circle(this.position.x, this.position.y, Constants.HAWKE_RADIUS);
+    }
 
-        batch.setProjectionMatrix(GameScreen.instance.getViewport().getCamera().combined);
-        batch.begin();
-
+    public void renderSprites(SpriteBatch batch)
+    {
+        font.setColor(Constants.HAWKE_TEXT_COLOR);
         font.draw(
                 batch,
                 this.animationState.getLabel(),
                 this.position.x,
-                this.position.y,
+                this.position.y + Constants.HAWKE_RADIUS / 4.0f,
                 0,
                 Align.center,
                 false
         );
-
-        batch.end();
     }
 
     public void flap()

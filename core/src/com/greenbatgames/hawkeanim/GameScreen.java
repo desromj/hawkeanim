@@ -4,8 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -21,6 +21,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
 
     Viewport viewport;
     ShapeRenderer renderer;
+    SpriteBatch batch;
 
     Array<Platform> platforms;
     Hawke hawke;
@@ -38,6 +39,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         this.platforms = new Array<Platform>();
         this.viewport = new ExtendViewport(Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
         this.renderer = new ShapeRenderer();
+        this.batch = new SpriteBatch();
         this.spawnPoint = new Vector2(80.0f, 160.0f);
         this.hawke = new Hawke(spawnPoint);
 
@@ -75,9 +77,17 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
             platform.render(renderer);
 
         // Render Hawke
-        hawke.render(renderer);
+        hawke.renderShapes(renderer);
 
         renderer.end();
+
+        // Render Sprites
+        batch.setProjectionMatrix(viewport.getCamera().combined);
+        batch.begin();
+
+        hawke.renderSprites(batch);
+
+        batch.end();
     }
 
     @Override
