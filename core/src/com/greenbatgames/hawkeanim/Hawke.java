@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
@@ -59,7 +60,7 @@ public class Hawke
     public void update(float delta, Array<Platform> platforms)
     {
         if (this.gliding)
-            this.velocity.y = Constants.GRAVITY * 2.5f;
+            this.velocity.y = Constants.GLIDE_GRAVITY;
         else
             this.velocity.y += Constants.GRAVITY;
 
@@ -69,11 +70,15 @@ public class Hawke
         if (this.position.y < Constants.KILL_PLANE)
             init();
 
+        boolean onPlatform = false;
+
         // Platform collision logic
         for (Platform platform: platforms)
         {
             if (this.hasCollided(platform))
             {
+                onPlatform = true;
+
                 this.grounded = true;
                 this.flapping = false;
                 this.gliding = false;
@@ -86,6 +91,9 @@ public class Hawke
             }
         }
 
+        if (!onPlatform)
+            this.grounded = false;
+
         if (this.cannotFlapFor <= 0.0f && !this.grounded)
             this.flapping = false;
 
@@ -96,20 +104,50 @@ public class Hawke
 
         // Idle/Walking/Running movement controls
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            if (running)
-                this.velocity.x = Constants.HAWKE_RUN_SPEED;
-            else
-                this.velocity.x = Constants.HAWKE_WALK_SPEED;
+            if (gliding)
+            {
+                if (running) {
+                    this.velocity.x += Constants.HAWKE_GLIDE_RUN_SPEED;
+                } else {
+                    this.velocity.x += Constants.HAWKE_GLIDE_WALK_SPEED;
+                }
+
+                this.velocity.x = MathUtils.clamp(
+                        this.velocity.x,
+                        -Constants.HAWKE_MAX_GLIDE_SPEED,
+                        Constants.HAWKE_MAX_GLIDE_SPEED);
+            } else {
+                if (running)
+                    this.velocity.x = Constants.HAWKE_RUN_SPEED;
+                else
+                    this.velocity.x = Constants.HAWKE_WALK_SPEED;
+            }
         } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            if (running)
-                this.velocity.x = -Constants.HAWKE_RUN_SPEED;
-            else
-                this.velocity.x = -Constants.HAWKE_WALK_SPEED;
+            if (gliding)
+            {
+                if (running) {
+                    this.velocity.x -= Constants.HAWKE_GLIDE_RUN_SPEED;
+                } else {
+                    this.velocity.x -= Constants.HAWKE_GLIDE_WALK_SPEED;
+                }
+
+                this.velocity.x = MathUtils.clamp(
+                        this.velocity.x,
+                        -Constants.HAWKE_MAX_GLIDE_SPEED,
+                        Constants.HAWKE_MAX_GLIDE_SPEED);
+            } else {
+                if (running)
+                    this.velocity.x = -Constants.HAWKE_RUN_SPEED;
+                else
+                    this.velocity.x = -Constants.HAWKE_WALK_SPEED;
+            }
         } else {
             if (this.grounded)
                 this.velocity.x = 0.0f;
             else {
-                if (!this.gliding)
+                if (this.gliding)
+                    this.velocity.x *= Constants.HORIZONTAL_GLIDE_DAMPEN;
+                else
                     this.velocity.x *= Constants.HORIZONTAL_FALL_DAMPEN;
             }
         }
