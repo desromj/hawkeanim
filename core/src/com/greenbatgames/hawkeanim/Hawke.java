@@ -75,7 +75,7 @@ public class Hawke
         // Platform collision logic
         for (Platform platform: platforms)
         {
-            if (this.hasCollided(platform))
+            if (this.hasLanded(platform))
             {
                 onPlatform = true;
 
@@ -186,7 +186,7 @@ public class Hawke
         }
     }
 
-    private boolean hasCollided(Platform platform)
+    private boolean hasLanded(Platform platform)
     {
         boolean left = false, right = false, middle = false;
 
@@ -208,7 +208,26 @@ public class Hawke
     public void renderShapes(ShapeRenderer renderer)
     {
         renderer.setColor(Constants.HAWKE_COLOR);
-        renderer.circle(this.position.x, this.position.y, Constants.HAWKE_RADIUS);
+
+        // bottom circle of the capsule
+        renderer.circle(
+                this.position.x,
+                this.position.y,
+                Constants.HAWKE_RADIUS);
+
+        // top circle of the capsule
+        renderer.circle(
+                this.position.x,
+                this.position.y + 2.0f * Constants.HAWKE_RADIUS,
+                Constants.HAWKE_RADIUS);
+
+        // rectangle connecting the two circles into a capsule
+        renderer.rect(
+                this.position.x - Constants.HAWKE_RADIUS,
+                this.position.y,
+                2.0f * Constants.HAWKE_RADIUS,
+                2.0f * Constants.HAWKE_RADIUS
+        );
     }
 
     public void renderSprites(SpriteBatch batch)
@@ -218,7 +237,7 @@ public class Hawke
                 batch,
                 this.animationState.getLabel(),
                 this.position.x,
-                this.position.y + Constants.HAWKE_RADIUS / 4.0f,
+                this.position.y + 5.0f * Constants.HAWKE_RADIUS / 4.0f,
                 0,
                 Align.center,
                 false
