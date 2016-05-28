@@ -8,6 +8,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 
@@ -17,7 +22,7 @@ import com.badlogic.gdx.utils.Array;
 public class Hawke
 {
     AnimationState animationState;
-    Vector2 position, velocity;
+    Vector2 position;
     Vector2 spawnPosition;
     private Vector2 lastPosition;
 
@@ -27,14 +32,24 @@ public class Hawke
     SpriteBatch batch;
     BitmapFont font;
 
-    public Hawke(Vector2 position)
+    Body body;
+
+    public Hawke(Vector2 position, World world)
     {
-        this(position.x, position.y);
+        this(position.x, position.y, world);
     }
 
-    public Hawke(float x, float y)
+    public Hawke(float x, float y, World world)
     {
         this.spawnPosition = new Vector2(x, y);
+
+        this.position = new Vector2(this.spawnPosition.x, this.spawnPosition.y);
+        this.lastPosition = new Vector2(this.spawnPosition.x, this.spawnPosition.y);
+        this.animationState = AnimationState.FALLING;
+        this.grounded = false;
+        this.flapping = false;
+        this.gliding = false;
+        this.cannotFlapFor = 0.0f;
 
         this.batch = new SpriteBatch();
         this.font = new BitmapFont();
@@ -42,14 +57,22 @@ public class Hawke
         this.font.setColor(Constants.HAWKE_TEXT_COLOR);
         this.font.getData().setScale(Constants.HAWKE_TEXT_SCALE);
 
+        initPhysics(world);
         init();
     }
 
     public void init()
     {
-        this.position = new Vector2(this.spawnPosition.x, this.spawnPosition.y);
-        this.lastPosition = new Vector2(this.spawnPosition.x, this.spawnPosition.y);
-        this.velocity = new Vector2();
+        this.body.setTransform(
+                this.spawnPosition.x / Constants.PTM,
+                (this.spawnPosition.y) / Constants.PTM,
+                0.0f
+        );
+        this.body.setLinearVelocity(0f, 0f);
+
+        this.position.set(this.spawnPosition.x, this.spawnPosition.y);
+        this.lastPosition.set(this.spawnPosition.x, this.spawnPosition.y);
+
         this.animationState = AnimationState.FALLING;
         this.grounded = false;
         this.flapping = false;
@@ -57,14 +80,47 @@ public class Hawke
         this.cannotFlapFor = 0.0f;
     }
 
+    private void initPhysics(World world)
+    {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.position.set(
+                this.position.x / Constants.PTM,
+                (this.position.y + Constants.HAWKE_RADIUS) / Constants.PTM
+        );
+        bodyDef.fixedRotation = true;
+
+        body = world.createBody(bodyDef);
+
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(
+                Constants.HAWKE_RADIUS / Constants.PTM,
+                (Constants.HAWKE_RADIUS * 2.0f) / Constants.PTM
+        );
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 1.0f;
+        fixtureDef.restitution = 0f;
+        fixtureDef.friction = 0f;
+
+        body.createFixture(fixtureDef);
+
+        shape.dispose();
+    }
+
     public void update(float delta, Array<Platform> platforms)
     {
-        if (this.gliding)
-            this.velocity.y = Constants.GLIDE_GRAVITY;
-        else
-            this.velocity.y += Constants.GRAVITY;
+        // First cling position to the physics body
+        this.position.set(
+                this.body.getPosition().x * Constants.PTM,
+                this.body.getPosition().y * Constants.PTM
+        );
 
-        this.position.mulAdd(this.velocity, delta);
+        // Proceed to rest of 'regular' updates
+        if (this.gliding)
+            this.body.applyForceToCenter(Constants.GLIDE_DRAG_FORCE, true);
+
         this.cannotFlapFor -= delta;
 
         if (this.position.y < Constants.KILL_PLANE)
@@ -84,9 +140,6 @@ public class Hawke
                 this.gliding = false;
                 this.cannotFlapFor = 0.0f;
 
-                // Constrain player to the top of the platform
-                this.position.y = platform.top + Constants.HAWKE_RADIUS;
-                this.velocity.y = 0.0f;
                 break;
             }
         }
@@ -106,49 +159,89 @@ public class Hawke
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             if (gliding)
             {
+                float vel = this.body.getLinearVelocity().x * Constants.PTM;
+
                 if (running) {
-                    this.velocity.x += Constants.HAWKE_GLIDE_RUN_SPEED;
+                    vel += Constants.HAWKE_GLIDE_RUN_SPEED;
                 } else {
-                    this.velocity.x += Constants.HAWKE_GLIDE_WALK_SPEED;
+                    vel += Constants.HAWKE_GLIDE_WALK_SPEED;
                 }
 
-                this.velocity.x = MathUtils.clamp(
-                        this.velocity.x,
+                vel = MathUtils.clamp(
+                        vel,
                         -Constants.HAWKE_MAX_GLIDE_SPEED,
                         Constants.HAWKE_MAX_GLIDE_SPEED);
+
+                this.body.setLinearVelocity(
+                        vel / Constants.PTM,
+                        Constants.GLIDE_CONSTANT_GRAVITY / Constants.PTM
+                );
             } else {
-                if (running)
-                    this.velocity.x = Constants.HAWKE_RUN_SPEED;
-                else
-                    this.velocity.x = Constants.HAWKE_WALK_SPEED;
+                if (running) {
+                    this.body.setLinearVelocity(
+                            Constants.HAWKE_RUN_SPEED / Constants.PTM,
+                            this.body.getLinearVelocity().y
+                    );
+                } else {
+                    this.body.setLinearVelocity(
+                            Constants.HAWKE_WALK_SPEED / Constants.PTM,
+                            this.body.getLinearVelocity().y
+                    );
+                }
             }
         } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             if (gliding)
             {
+                float vel = this.body.getLinearVelocity().x * Constants.PTM;
+
                 if (running) {
-                    this.velocity.x -= Constants.HAWKE_GLIDE_RUN_SPEED;
+                    vel -= Constants.HAWKE_GLIDE_RUN_SPEED;
                 } else {
-                    this.velocity.x -= Constants.HAWKE_GLIDE_WALK_SPEED;
+                    vel -= Constants.HAWKE_GLIDE_WALK_SPEED;
                 }
 
-                this.velocity.x = MathUtils.clamp(
-                        this.velocity.x,
+                vel = MathUtils.clamp(
+                        vel,
                         -Constants.HAWKE_MAX_GLIDE_SPEED,
                         Constants.HAWKE_MAX_GLIDE_SPEED);
+
+                this.body.setLinearVelocity(
+                        vel / Constants.PTM,
+                        Constants.GLIDE_CONSTANT_GRAVITY / Constants.PTM
+                );
+
             } else {
-                if (running)
-                    this.velocity.x = -Constants.HAWKE_RUN_SPEED;
-                else
-                    this.velocity.x = -Constants.HAWKE_WALK_SPEED;
+                if (running) {
+                    this.body.setLinearVelocity(
+                            -Constants.HAWKE_RUN_SPEED / Constants.PTM,
+                            this.body.getLinearVelocity().y
+                    );
+                } else {
+                    this.body.setLinearVelocity(
+                            -Constants.HAWKE_WALK_SPEED / Constants.PTM,
+                            this.body.getLinearVelocity().y
+                    );
+                }
             }
         } else {
-            if (this.grounded)
-                this.velocity.x = 0.0f;
-            else {
-                if (this.gliding)
-                    this.velocity.x *= Constants.HORIZONTAL_GLIDE_DAMPEN;
-                else
-                    this.velocity.x *= Constants.HORIZONTAL_FALL_DAMPEN;
+            if (!this.grounded)
+            {
+                if (this.gliding) {
+                    this.body.setLinearVelocity(
+                            this.body.getLinearVelocity().x * Constants.HORIZONTAL_GLIDE_DAMPEN,
+                            Constants.GLIDE_CONSTANT_GRAVITY / Constants.PTM
+                    );
+                } else {
+                    this.body.setLinearVelocity(
+                            this.body.getLinearVelocity().x * Constants.HORIZONTAL_FALL_DAMPEN,
+                            this.body.getLinearVelocity().y
+                    );
+                }
+            } else {
+                this.body.setLinearVelocity(
+                        this.body.getLinearVelocity().x * Constants.HORIZONTAL_WALK_DAMPEN,
+                        this.body.getLinearVelocity().y
+                );
             }
         }
 
@@ -168,9 +261,9 @@ public class Hawke
     {
         if (this.grounded)
         {
-            if (Math.abs(this.velocity.x) > Constants.HAWKE_WALK_SPEED)
+            if (Math.abs(this.body.getLinearVelocity().x * Constants.PTM) > Constants.HAWKE_WALK_SPEED)
                 return AnimationState.RUNNING;
-            else if (Math.abs(this.velocity.x) > Constants.HAWKE_IDLE_SPEED_THRESHOLD)
+            else if (Math.abs(this.body.getLinearVelocity().x * Constants.PTM) > Constants.HAWKE_IDLE_SPEED_THRESHOLD)
                 return AnimationState.WALKING;
             else
                 return AnimationState.IDLE;
@@ -190,8 +283,10 @@ public class Hawke
     {
         boolean left = false, right = false, middle = false;
 
-        if (this.lastPosition.y - Constants.HAWKE_RADIUS >= platform.top
-                && this.position.y - Constants.HAWKE_RADIUS < platform.top)
+        if (Utils.almostEqualTo(
+                this.body.getPosition().y * Constants.PTM - Constants.HAWKE_RADIUS * 2.0f,
+                platform.top,
+                Constants.PLATFORM_COLLISION_LEEWAY))
         {
             float edgeLeeway = Constants.HAWKE_RADIUS / 2.0f;
             float leftFoot = this.position.x - edgeLeeway;
@@ -212,19 +307,19 @@ public class Hawke
         // bottom circle of the capsule
         renderer.circle(
                 this.position.x,
-                this.position.y,
+                this.position.y - Constants.HAWKE_RADIUS,
                 Constants.HAWKE_RADIUS);
 
         // top circle of the capsule
         renderer.circle(
                 this.position.x,
-                this.position.y + 2.0f * Constants.HAWKE_RADIUS,
+                this.position.y + Constants.HAWKE_RADIUS,
                 Constants.HAWKE_RADIUS);
 
         // rectangle connecting the two circles into a capsule
         renderer.rect(
                 this.position.x - Constants.HAWKE_RADIUS,
-                this.position.y,
+                this.position.y - Constants.HAWKE_RADIUS,
                 2.0f * Constants.HAWKE_RADIUS,
                 2.0f * Constants.HAWKE_RADIUS
         );
@@ -237,7 +332,7 @@ public class Hawke
                 batch,
                 this.animationState.getLabel(),
                 this.position.x,
-                this.position.y + 5.0f * Constants.HAWKE_RADIUS / 4.0f,
+                this.position.y + Constants.HAWKE_RADIUS / 4.0f,
                 0,
                 Align.center,
                 false
@@ -250,8 +345,13 @@ public class Hawke
         {
             this.grounded = false;
             this.flapping = true;
-            this.velocity.y = Constants.HAWKE_JUMP_IMPULSE;
             this.cannotFlapFor = Constants.HAWKE_DELAY_BETWEEN_FLAPS;
+
+            this.body.setLinearVelocity(
+                    this.body.getLinearVelocity().x,
+                    0f
+            );
+            this.body.applyForceToCenter(0f, Constants.HAWKE_JUMP_IMPULSE, true);
         }
     }
 

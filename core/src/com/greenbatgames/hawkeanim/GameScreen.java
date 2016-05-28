@@ -7,7 +7,10 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -27,6 +30,10 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
     Array<Platform> platforms;
     Hawke hawke;
 
+    World world;
+    Box2DDebugRenderer debugRenderer;
+    Matrix4 debugMatrix;
+
     private Vector2 spawnPoint;
 
     private GameScreen()
@@ -42,12 +49,18 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         this.renderer = new ShapeRenderer();
         this.batch = new SpriteBatch();
         this.spawnPoint = new Vector2(80.0f, 160.0f);
-        this.hawke = new Hawke(spawnPoint);
+
+        // Add physics world: with gravity
+        world = new World(new Vector2(0, Constants.GRAVITY), true);
+        debugRenderer = new Box2DDebugRenderer();
+
+        // World dependent objects
+        this.hawke = new Hawke(spawnPoint, world);
         this.chaseCam = new ChaseCam(viewport.getCamera(), this.hawke);
 
         // Init Platforms
-        platforms.add(new Platform(20.0f, 20.0f, 1600.0f, 80.0f));
-        platforms.add(new Platform(800.0f, 420.0f, 540.0f, 25.0f));
+        platforms.add(new Platform(20.0f, 20.0f, 1600.0f, 80.0f, world));
+        platforms.add(new Platform(800.0f, 420.0f, 540.0f, 25.0f, world));
 
         // Finalize
         Gdx.input.setInputProcessor(this);
@@ -58,6 +71,13 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
     @Override
     public void render(float delta)
     {
+        // Update the physics engine with all the bodies
+        world.step(
+                Constants.PHYSICS_STEP_FREQ,
+                Constants.PHYSICS_VEL_ITERATIONS,
+                Constants.PHYSICS_POS_ITERATIONS
+        );
+
         // TODO: Updates go here
         hawke.update(delta, platforms);
         chaseCam.update(delta);
@@ -66,6 +86,14 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         // TODO: Then rendering logic
         viewport.apply();
         renderer.setProjectionMatrix(viewport.getCamera().combined);
+
+        // Scale the debug Matrix to box2d sizes
+        debugMatrix = viewport.getCamera().combined.cpy().scale(
+                Constants.PTM,
+                Constants.PTM,
+                0
+        );
+
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -91,6 +119,9 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         hawke.renderSprites(batch);
 
         batch.end();
+
+        // Render the debug physics engine settings
+        debugRenderer.render(world, debugMatrix);
     }
 
     @Override
