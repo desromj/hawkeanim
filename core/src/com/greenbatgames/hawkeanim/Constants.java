@@ -14,6 +14,11 @@ public class Constants
     public static final int PHYSICS_VEL_ITERATIONS = 6;
     public static final int PHYSICS_POS_ITERATIONS = 2;
 
+    // Group indicies
+    public static final int PLAYER_GROUP = -1;
+    public static final int PLATFORM_GROUP = 1;
+
+    // regular constants
     public static final float WORLD_WIDTH = 1920.0f;
     public static final float WORLD_HEIGHT = WORLD_WIDTH * 9.0f / 16.0f;
 

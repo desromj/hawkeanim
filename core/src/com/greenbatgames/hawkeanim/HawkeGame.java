@@ -1,5 +1,6 @@
 package com.greenbatgames.hawkeanim;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -12,6 +13,7 @@ public class HawkeGame extends Game
 	@Override
 	public void create ()
 	{
-        setScreen(GameScreen.instance);
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
+		setScreen(GameScreen.instance);
 	}
 }

@@ -49,8 +49,11 @@ public class Platform
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
 
+        fixtureDef.filter.groupIndex = Constants.PLATFORM_GROUP;
+
         this.body = world.createBody(bodyDef);
         this.body.createFixture(fixtureDef);
+        this.body.setUserData(this);
 
         shape.dispose();
     }

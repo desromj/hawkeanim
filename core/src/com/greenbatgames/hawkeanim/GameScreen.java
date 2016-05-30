@@ -48,7 +48,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         this.viewport = new ExtendViewport(Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
         this.renderer = new ShapeRenderer();
         this.batch = new SpriteBatch();
-        this.spawnPoint = new Vector2(80.0f, 160.0f);
+        this.spawnPoint = new Vector2(80.0f, 240.0f);
 
         // Add physics world: with gravity
         world = new World(new Vector2(0, Constants.GRAVITY), true);
@@ -64,6 +64,8 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
 
         // Finalize
         Gdx.input.setInputProcessor(this);
+
+        world.setContactListener(new HawkeContactListener());
     }
 
 

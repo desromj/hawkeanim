@@ -104,7 +104,10 @@ public class Hawke
         fixtureDef.restitution = 0f;
         fixtureDef.friction = 0f;
 
+        fixtureDef.filter.groupIndex = Constants.PLAYER_GROUP;
+
         body.createFixture(fixtureDef);
+        body.setUserData(this);
 
         shape.dispose();
     }
@@ -281,6 +284,9 @@ public class Hawke
 
     private boolean hasLanded(Platform platform)
     {
+        if (flapping)
+            return false;
+
         boolean left = false, right = false, middle = false;
 
         if (Utils.almostEqualTo(
@@ -359,4 +365,5 @@ public class Hawke
     {
         return this.position;
     }
+    public float getFootYPosition() { return this.position.y - Constants.HAWKE_RADIUS * 2.0f; }
 }
