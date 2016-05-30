@@ -43,7 +43,10 @@ public class HawkeContactListener implements ContactListener
                 hawke = (Hawke) b;
                 platform = (Platform) a;
             }
-            
+
+            if (hawke.collisionDisabled())
+                contact.setEnabled(false);
+
             if (hawke.getFootYPosition() <= platform.top - Constants.PLATFORM_COLLISION_LEEWAY) {
                 contact.setEnabled(false);
             }

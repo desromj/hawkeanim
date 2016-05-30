@@ -27,7 +27,7 @@ public class Hawke
     private Vector2 lastPosition;
 
     boolean grounded, flapping, gliding;
-    float cannotFlapFor;
+    float cannotFlapFor, disableCollisionFor;
 
     SpriteBatch batch;
     BitmapFont font;
@@ -50,6 +50,7 @@ public class Hawke
         this.flapping = false;
         this.gliding = false;
         this.cannotFlapFor = 0.0f;
+        this.disableCollisionFor = 0.0f;
 
         this.batch = new SpriteBatch();
         this.font = new BitmapFont();
@@ -78,6 +79,7 @@ public class Hawke
         this.flapping = false;
         this.gliding = false;
         this.cannotFlapFor = 0.0f;
+        this.disableCollisionFor = 0.0f;
     }
 
     private void initPhysics(World world)
@@ -94,7 +96,7 @@ public class Hawke
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(
-                Constants.HAWKE_RADIUS / Constants.PTM,
+                Constants.PLATFORM_EDGE_LEEWAY / Constants.PTM,
                 (Constants.HAWKE_RADIUS * 2.0f) / Constants.PTM
         );
 
@@ -125,6 +127,7 @@ public class Hawke
             this.body.applyForceToCenter(Constants.GLIDE_DRAG_FORCE, true);
 
         this.cannotFlapFor -= delta;
+        this.disableCollisionFor -= delta;
 
         if (this.position.y < Constants.KILL_PLANE)
             init();
@@ -248,6 +251,10 @@ public class Hawke
             }
         }
 
+        // Tweak the body while holding down so it does not come to rest
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN))
+            this.body.setAwake(true);
+
         // Set what the next animation state should be
         this.animationState = nextAnimationState();
 
@@ -294,9 +301,8 @@ public class Hawke
                 platform.top,
                 Constants.PLATFORM_COLLISION_LEEWAY))
         {
-            float edgeLeeway = Constants.HAWKE_RADIUS / 2.0f;
-            float leftFoot = this.position.x - edgeLeeway;
-            float rightFoot = this.position.x + edgeLeeway;
+            float leftFoot = this.position.x - Constants.PLATFORM_EDGE_LEEWAY;
+            float rightFoot = this.position.x + Constants.PLATFORM_EDGE_LEEWAY;
 
             left = (platform.left < leftFoot && platform.right > leftFoot);
             right = (platform.left < rightFoot && platform.right > rightFoot);
@@ -347,6 +353,12 @@ public class Hawke
 
     public void flap()
     {
+        if (this.grounded && Gdx.input.isKeyPressed(Input.Keys.DOWN))
+        {
+            this.disableCollisionFor = Constants.DISABLE_COLLISION_FOR_PLATFORM;
+            return;
+        }
+
         if (this.cannotFlapFor <= 0.0f)
         {
             this.grounded = false;
@@ -366,4 +378,5 @@ public class Hawke
         return this.position;
     }
     public float getFootYPosition() { return this.position.y - Constants.HAWKE_RADIUS * 2.0f; }
+    public boolean collisionDisabled() { return this.disableCollisionFor > 0f; }
 }

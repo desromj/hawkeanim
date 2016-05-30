@@ -34,6 +34,7 @@ public class Constants
     public static final float GLIDE_CONSTANT_GRAVITY = -20f;
     public static final Vector2 GLIDE_DRAG_FORCE = new Vector2(0f, 12f);
     public static final float KILL_PLANE = -400.0f;
+    public static final float DISABLE_COLLISION_FOR_PLATFORM = 0.25f;
 
     public static final float HORIZONTAL_WALK_DAMPEN = 0.8f;
     public static final float HORIZONTAL_FALL_DAMPEN = 0.95f;
@@ -51,5 +52,7 @@ public class Constants
     public static final float HAWKE_GLIDE_WALK_SPEED = 15.0f;
     public static final float HAWKE_GLIDE_RUN_SPEED = 40.0f;
     public static final float HAWKE_MAX_GLIDE_SPEED = 600.0f;
-    public static final float HAWKE_JUMP_IMPULSE = 640.0f;
+    public static final float HAWKE_JUMP_IMPULSE = 420.0f;
+
+    public static final float PLATFORM_EDGE_LEEWAY = HAWKE_RADIUS / 1.5f;
 }
