@@ -25,7 +25,7 @@ public class ChaseCam
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE))
         {
             if (!following)
-                this.clingToTarget();
+                this.centreOnTarget();
 
             following = !following;
         }
@@ -67,7 +67,7 @@ public class ChaseCam
         }
     }
 
-    private void clingToTarget()
+    private void centreOnTarget()
     {
         camera.position.x = target.getPosition().x;
         camera.position.y = target.getPosition().y;
