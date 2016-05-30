@@ -59,8 +59,8 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         this.chaseCam = new ChaseCam(viewport.getCamera(), this.hawke);
 
         // Init Platforms
-        platforms.add(new Platform(20.0f, 20.0f, 1600.0f, 80.0f, world));
-        platforms.add(new Platform(800.0f, 420.0f, 540.0f, 25.0f, world));
+        platforms.add(new Platform(20.0f, 20.0f, 1600.0f, 80.0f, world, false));
+        platforms.add(new Platform(800.0f, 420.0f, 540.0f, 25.0f, world, true));
 
         // Finalize
         Gdx.input.setInputProcessor(this);

@@ -16,10 +16,11 @@ public class Platform
     Vector2 position;
     float width, height;
     float left, right, top, bottom;
+    boolean oneWay;
 
     Body body;
 
-    public Platform(float x, float y, float width, float height, World world)
+    public Platform(float x, float y, float width, float height, World world, boolean oneWay)
     {
         this.position = new Vector2(x + width / 2.0f, y + height / 2.0f);
         this.width = width;
@@ -29,6 +30,7 @@ public class Platform
         this.right = x + width;
         this.bottom = y;
         this.top = y + height;
+        this.oneWay = oneWay;
 
         initPhysics(world);
     }
@@ -68,4 +70,6 @@ public class Platform
                 this.height
         );
     }
+
+    public boolean isOneWay() { return this.oneWay; }
 }

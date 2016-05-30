@@ -44,7 +44,7 @@ public class HawkeContactListener implements ContactListener
                 platform = (Platform) a;
             }
 
-            if (hawke.collisionDisabled())
+            if (hawke.collisionDisabled() && platform.isOneWay())
                 contact.setEnabled(false);
 
             if (hawke.getFootYPosition() <= platform.top - Constants.PLATFORM_COLLISION_LEEWAY) {
