@@ -14,9 +14,9 @@ public class Constants
     public static final int PHYSICS_VEL_ITERATIONS = 6;
     public static final int PHYSICS_POS_ITERATIONS = 2;
 
-    // Group indicies
-    public static final int PLAYER_GROUP = -1;
-    public static final int PLATFORM_GROUP = 1;
+    // Density values, in kg/m^3 (human average is 985, water is 1020, wood about 650, but varies)
+    public static final float HAWKE_DENSITY = 600.0f;
+    public static final float BOX_DENSITY = 660.0f;
 
     // regular constants
     public static final float WORLD_WIDTH = 1920.0f;
@@ -27,14 +27,11 @@ public class Constants
     public static final float CHASE_CAM_Y_LEEWAY = WORLD_HEIGHT / 5.0f;
 
     public static final Color BG_COLOR = Color.SKY;
-    public static final Color PLATFORM_COLOR = Color.BLUE;
-    public static final float PLATFORM_COLLISION_LEEWAY = WORLD_WIDTH / 960.0f;
 
     public static final float GRAVITY = -20f;
     public static final float GLIDE_CONSTANT_GRAVITY = -20f;
     public static final Vector2 GLIDE_DRAG_FORCE = new Vector2(0f, 12f);
     public static final float KILL_PLANE = -400.0f;
-    public static final float DISABLE_COLLISION_FOR_PLATFORM = 0.25f;
 
     public static final float HORIZONTAL_WALK_DAMPEN = 0.8f;
     public static final float HORIZONTAL_FALL_DAMPEN = 0.95f;
@@ -52,7 +49,13 @@ public class Constants
     public static final float HAWKE_GLIDE_WALK_SPEED = 15.0f;
     public static final float HAWKE_GLIDE_RUN_SPEED = 40.0f;
     public static final float HAWKE_MAX_GLIDE_SPEED = 600.0f;
-    public static final float HAWKE_JUMP_IMPULSE = 420.0f;
+    public static final float HAWKE_JUMP_IMPULSE = 420.0f * HAWKE_DENSITY;
 
+    public static final Color PLATFORM_COLOR = Color.BLUE;
+    public static final float PLATFORM_COLLISION_LEEWAY = WORLD_WIDTH / 960.0f;
+    public static final float DISABLE_COLLISION_FOR_PLATFORM = 0.25f;
     public static final float PLATFORM_EDGE_LEEWAY = HAWKE_RADIUS / 1.5f;
+
+    public static final Color BOX_COLOR = Color.FIREBRICK;
+
 }

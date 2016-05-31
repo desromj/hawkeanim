@@ -102,11 +102,9 @@ public class Hawke
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 1.0f;
+        fixtureDef.density = Constants.HAWKE_DENSITY;
         fixtureDef.restitution = 0f;
         fixtureDef.friction = 0f;
-
-        fixtureDef.filter.groupIndex = Constants.PLAYER_GROUP;
 
         body.createFixture(fixtureDef);
         body.setUserData(this);

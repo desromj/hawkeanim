@@ -28,6 +28,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
     ChaseCam chaseCam;
 
     Array<Platform> platforms;
+    Array<Box> boxes;
     Hawke hawke;
 
     World world;
@@ -45,6 +46,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
     {
         // Base inits
         this.platforms = new Array<Platform>();
+        this.boxes = new Array<Box>();
         this.viewport = new ExtendViewport(Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
         this.renderer = new ShapeRenderer();
         this.batch = new SpriteBatch();
@@ -61,6 +63,9 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         // Init Platforms
         platforms.add(new Platform(20.0f, 20.0f, 1600.0f, 80.0f, world, false));
         platforms.add(new Platform(800.0f, 420.0f, 540.0f, 25.0f, world, true));
+
+        // Init boxes
+        boxes.add(new Box(870.0f, 480.0f, 120.0f, 120.0f, world));
 
         // Finalize
         Gdx.input.setInputProcessor(this);
@@ -83,6 +88,11 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         // TODO: Updates go here
         hawke.update(delta, platforms);
         chaseCam.update(delta);
+
+        // Render boxes
+        for (Box box: boxes)
+            box.update(delta);
+
 
 
         // TODO: Then rendering logic
@@ -108,6 +118,10 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         // Render platforms
         for (Platform platform: platforms)
             platform.render(renderer);
+
+        // Render boxes
+        for (Box box: boxes)
+            box.render(renderer);
 
         // Render Hawke
         hawke.renderShapes(renderer);

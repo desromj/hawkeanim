@@ -1,6 +1,7 @@
 package com.greenbatgames.hawkeanim;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -9,28 +10,20 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 /**
- * Created by Quiv on 2016-05-18.
+ * Created by Quiv on 31-05-2016.
  */
-public class Platform
+public class Box
 {
     Vector2 position;
     float width, height;
-    float left, right, top, bottom;
-    boolean oneWay;
 
     Body body;
 
-    public Platform(float x, float y, float width, float height, World world, boolean oneWay)
+    public Box(float x, float y, float width, float height, World world)
     {
-        this.position = new Vector2(x + width / 2.0f, y + height / 2.0f);
+        this.position = new Vector2(x, y);
         this.width = width;
         this.height = height;
-
-        this.left = x;
-        this.right = x + width;
-        this.bottom = y;
-        this.top = y + height;
-        this.oneWay = oneWay;
 
         initPhysics(world);
     }
@@ -38,10 +31,10 @@ public class Platform
     private void initPhysics(World world)
     {
         BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(
-                this.position.x / Constants.PTM,
-                this.position.y / Constants.PTM);
+                (this.position.x + this.width / 2.0f) / Constants.PTM,
+                (this.position.y + this.height / 2.0f) / Constants.PTM);
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(
@@ -50,6 +43,9 @@ public class Platform
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
+        fixtureDef.density = Constants.BOX_DENSITY;
+        fixtureDef.restitution = 0.2f;
+        fixtureDef.friction = 1.0f;
 
         this.body = world.createBody(bodyDef);
         this.body.createFixture(fixtureDef);
@@ -58,16 +54,28 @@ public class Platform
         shape.dispose();
     }
 
-    public void render(ShapeRenderer renderer)
+    public void update(float delta)
     {
-        renderer.setColor(Constants.PLATFORM_COLOR);
-        renderer.rect(
-                this.left,
-                this.bottom,
-                this.width,
-                this.height
+        // Cling this object's position to the physics body
+        this.position.set(
+                (this.body.getPosition().x * Constants.PTM) - this.width / 2.0f,
+                (this.body.getPosition().y * Constants.PTM) - this.height / 2.0f
         );
     }
 
-    public boolean isOneWay() { return this.oneWay; }
+    public void render(ShapeRenderer renderer)
+    {
+        renderer.setColor(Constants.BOX_COLOR);
+        renderer.rect(
+                this.position.x,
+                this.position.y,
+                this.width / 2.0f,
+                this.height / 2.0f,
+                this.width,
+                this.height,
+                1.0f,
+                1.0f,
+                this.body.getAngle() * MathUtils.radDeg
+        );
+    }
 }
