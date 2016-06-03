@@ -12,23 +12,15 @@ import com.badlogic.gdx.physics.box2d.World;
 /**
  * Created by Quiv on 31-05-2016.
  */
-public class Box
+public class Box extends PhysicalObject
 {
-    Vector2 position;
-    float width, height;
-
-    Body body;
-
     public Box(float x, float y, float width, float height, World world)
     {
-        this.position = new Vector2(x, y);
-        this.width = width;
-        this.height = height;
-
-        initPhysics(world);
+        super(x, y, width, height, world);
     }
 
-    private void initPhysics(World world)
+    @Override
+    protected void initPhysics(World world)
     {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -54,15 +46,7 @@ public class Box
         shape.dispose();
     }
 
-    public void update(float delta)
-    {
-        // Cling this object's position to the physics body
-        this.position.set(
-                (this.body.getPosition().x * Constants.PTM) - this.width / 2.0f,
-                (this.body.getPosition().y * Constants.PTM) - this.height / 2.0f
-        );
-    }
-
+    @Override
     public void render(ShapeRenderer renderer)
     {
         renderer.setColor(Constants.BOX_COLOR);

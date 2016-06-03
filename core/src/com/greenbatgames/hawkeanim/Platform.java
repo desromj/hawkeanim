@@ -11,31 +11,25 @@ import com.badlogic.gdx.physics.box2d.World;
 /**
  * Created by Quiv on 2016-05-18.
  */
-public class Platform
+public class Platform extends PhysicalObject
 {
-    Vector2 position;
-    float width, height;
     float left, right, top, bottom;
     boolean oneWay;
 
-    Body body;
-
     public Platform(float x, float y, float width, float height, World world, boolean oneWay)
     {
-        this.position = new Vector2(x + width / 2.0f, y + height / 2.0f);
-        this.width = width;
-        this.height = height;
+        super(x, y, width, height, world);
 
-        this.left = x;
-        this.right = x + width;
-        this.bottom = y;
-        this.top = y + height;
+        this.left = x - width / 2.0f;
+        this.right = x + width / 2.0f;
+        this.bottom = y - height / 2.0f;
+        this.top = y +  height / 2.0f;
+
         this.oneWay = oneWay;
-
-        initPhysics(world);
     }
 
-    private void initPhysics(World world)
+    @Override
+    protected void initPhysics(World world)
     {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -58,6 +52,7 @@ public class Platform
         shape.dispose();
     }
 
+    @Override
     public void render(ShapeRenderer renderer)
     {
         renderer.setColor(Constants.PLATFORM_COLOR);

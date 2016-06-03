@@ -86,7 +86,7 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         );
 
         // TODO: Updates go here
-        hawke.update(delta, platforms);
+        hawke.update(delta);
         chaseCam.update(delta);
 
         // Render boxes

@@ -112,7 +112,7 @@ public class Hawke
         shape.dispose();
     }
 
-    public void update(float delta, Array<Platform> platforms)
+    public void update(float delta)
     {
         // First cling position to the physics body
         this.position.set(
@@ -130,26 +130,7 @@ public class Hawke
         if (this.position.y < Constants.KILL_PLANE)
             init();
 
-        boolean onPlatform = false;
-
-        // Platform collision logic
-        for (Platform platform: platforms)
-        {
-            if (this.hasLanded(platform))
-            {
-                onPlatform = true;
-
-                this.grounded = true;
-                this.flapping = false;
-                this.gliding = false;
-                this.cannotFlapFor = 0.0f;
-
-                break;
-            }
-        }
-
-        if (!onPlatform)
-            this.grounded = false;
+        // TODO: removed collision code, ensure land() and maybe noLand() are handled in collision handler
 
         if (this.cannotFlapFor <= 0.0f && !this.grounded)
             this.flapping = false;
@@ -287,29 +268,6 @@ public class Hawke
         }
     }
 
-    private boolean hasLanded(Platform platform)
-    {
-        if (flapping)
-            return false;
-
-        boolean left = false, right = false, middle = false;
-
-        if (Utils.almostEqualTo(
-                this.body.getPosition().y * Constants.PTM - Constants.HAWKE_RADIUS * 2.0f,
-                platform.top,
-                Constants.PLATFORM_COLLISION_LEEWAY))
-        {
-            float leftFoot = this.position.x - Constants.PLATFORM_EDGE_LEEWAY;
-            float rightFoot = this.position.x + Constants.PLATFORM_EDGE_LEEWAY;
-
-            left = (platform.left < leftFoot && platform.right > leftFoot);
-            right = (platform.left < rightFoot && platform.right > rightFoot);
-            middle = (platform.left > leftFoot && platform.right < rightFoot);
-        }
-
-        return left || right || middle;
-    }
-
     public void renderShapes(ShapeRenderer renderer)
     {
         renderer.setColor(Constants.HAWKE_COLOR);
@@ -347,6 +305,19 @@ public class Hawke
                 Align.center,
                 false
         );
+    }
+
+    public void land()
+    {
+        this.grounded = true;
+        this.flapping = false;
+        this.gliding = false;
+        this.cannotFlapFor = 0.0f;
+    }
+
+    public void dontLand()
+    {
+        this.grounded = false;
     }
 
     public void flap()
