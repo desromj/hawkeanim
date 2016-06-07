@@ -35,6 +35,7 @@ public class Hawke
 
     Body body;
     PhysicalObject carried;
+    float contactDist;
 
     public Hawke(Vector2 position, World world)
     {
@@ -54,6 +55,7 @@ public class Hawke
         this.carrying = false;
         this.cannotFlapFor = 0.0f;
         this.disableCollisionFor = 0.0f;
+        this.contactDist = 0f;
 
         this.batch = new SpriteBatch();
         this.font = new BitmapFont();
@@ -130,8 +132,6 @@ public class Hawke
 
         if (this.position.y < Constants.KILL_PLANE)
             init();
-
-        // TODO: removed collision code, ensure land() and maybe noLand() are handled in collision handler
 
         if (this.cannotFlapFor <= 0.0f && !this.grounded)
             this.flapping = false;
@@ -229,6 +229,21 @@ public class Hawke
                         this.body.getLinearVelocity().y
                 );
             }
+        }
+
+        // Cling horizontal velocity of grabbed objects if they are not at rest
+        if (!Gdx.input.isKeyPressed(Input.Keys.X)
+                || (this.carried != null
+                    && Math.abs(this.body.getPosition().dst(this.carried.getBody().getPosition())) > this.contactDist + Constants.WOBBLE_ROOM / 4f))
+        {
+            this.dropCarriedObject();
+        }
+        
+        if (this.carrying && this.carried != null && !this.carried.isAtRest()) {
+            carried.getBody().setLinearVelocity(
+                    this.body.getLinearVelocity().x,
+                    carried.getBody().getLinearVelocity().y
+            );
         }
 
         // Tweak the body while holding down so it does not come to rest
@@ -355,12 +370,14 @@ public class Hawke
     {
         this.carrying = true;
         this.carried = object;
+        this.contactDist = Math.abs(this.body.getPosition().dst(object.getBody().getPosition()));
     }
 
     public void dropCarriedObject()
     {
         this.carrying = false;
         this.carried = null;
+        this.contactDist = 0f;
     }
 
     public boolean isCarrying() { return this.carrying; }

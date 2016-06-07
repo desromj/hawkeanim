@@ -65,6 +65,8 @@ public class Constants
             new Vector2(0.75f * HAWKE_VERTEX_X_SCALE / PTM, -0.67f * HAWKE_VERTEX_Y_SCALE / PTM)
     };
 
+    public static final float WOBBLE_ROOM = WORLD_WIDTH / 1000f;
+
     public static final Color PLATFORM_COLOR = Color.BLUE;
     public static final float PLATFORM_COLLISION_LEEWAY = WORLD_WIDTH / 960.0f;
     public static final float DISABLE_COLLISION_FOR_PLATFORM = 0.25f;
