@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -26,13 +27,14 @@ public class Hawke
     Vector2 spawnPosition;
     private Vector2 lastPosition;
 
-    boolean grounded, flapping, gliding;
+    boolean grounded, flapping, gliding, carrying;
     float cannotFlapFor, disableCollisionFor;
 
     SpriteBatch batch;
     BitmapFont font;
 
     Body body;
+    PhysicalObject carried;
 
     public Hawke(Vector2 position, World world)
     {
@@ -49,6 +51,7 @@ public class Hawke
         this.grounded = false;
         this.flapping = false;
         this.gliding = false;
+        this.carrying = false;
         this.cannotFlapFor = 0.0f;
         this.disableCollisionFor = 0.0f;
 
@@ -70,6 +73,7 @@ public class Hawke
                 0.0f
         );
         this.body.setLinearVelocity(0f, 0f);
+        this.carried = null;
 
         this.position.set(this.spawnPosition.x, this.spawnPosition.y);
         this.lastPosition.set(this.spawnPosition.x, this.spawnPosition.y);
@@ -95,10 +99,7 @@ public class Hawke
         body = world.createBody(bodyDef);
 
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(
-                Constants.PLATFORM_EDGE_LEEWAY / Constants.PTM,
-                (Constants.HAWKE_RADIUS * 2.0f) / Constants.PTM
-        );
+        shape.set(Constants.HAWKE_VERTICIES);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -315,11 +316,6 @@ public class Hawke
         this.cannotFlapFor = 0.0f;
     }
 
-    public void dontLand()
-    {
-        this.grounded = false;
-    }
-
     public void flap()
     {
         if (this.grounded && Gdx.input.isKeyPressed(Input.Keys.DOWN))
@@ -334,18 +330,44 @@ public class Hawke
             this.flapping = true;
             this.cannotFlapFor = Constants.HAWKE_DELAY_BETWEEN_FLAPS;
 
+            // Cancel out the effect of gravity
             this.body.setLinearVelocity(
                     this.body.getLinearVelocity().x,
                     0f
             );
-            this.body.applyForceToCenter(0f, Constants.HAWKE_JUMP_IMPULSE, true);
+
+            // apply the flapping force upward
+            if (carrying && carried != null) {
+
+                float hawkeRatio = this.body.getMass() / (this.body.getMass() + carried.getBody().getMass());
+                float carriedRatio = carried.getBody().getMass() / (this.body.getMass() + carried.getBody().getMass());
+
+                this.body.applyForceToCenter(0f, Constants.HAWKE_JUMP_IMPULSE * hawkeRatio, true);
+                carried.getBody().applyForceToCenter(0f, Constants.HAWKE_JUMP_IMPULSE * carriedRatio, true);
+
+            } else {
+                this.body.applyForceToCenter(0f, Constants.HAWKE_JUMP_IMPULSE, true);
+            }
         }
     }
 
+    public void carryObject(PhysicalObject object)
+    {
+        this.carrying = true;
+        this.carried = object;
+    }
+
+    public void dropCarriedObject()
+    {
+        this.carrying = false;
+        this.carried = null;
+    }
+
+    public boolean isCarrying() { return this.carrying; }
     public Vector2 getPosition()
     {
         return this.position;
     }
-    public float getFootYPosition() { return this.position.y - Constants.HAWKE_RADIUS * 2.0f; }
+    public float getFootYHeight() { return this.position.y - Constants.HAWKE_RADIUS * 2.0f; }
     public boolean collisionDisabled() { return this.disableCollisionFor > 0f; }
 }

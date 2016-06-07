@@ -1,12 +1,12 @@
 package com.greenbatgames.hawkeanim;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.Filter;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 
 /**
@@ -75,9 +75,20 @@ public class HawkeContactListener implements ContactListener
                 if (hawke.collisionDisabled() && platform.isOneWay()) {
                     contact.setEnabled(false);
                 } else if (platform.isOneWay()) {
-                    if (hawke.getFootYPosition() <= platform.top - Constants.PLATFORM_COLLISION_LEEWAY) {
+                    if (hawke.getFootYHeight() <= platform.top - Constants.PLATFORM_COLLISION_LEEWAY) {
                         contact.setEnabled(false);
                     }
+                }
+            }
+
+            // Check logic for carrying Dynamic Physical Objects
+            if (other instanceof PhysicalObject) {
+                PhysicalObject physical = (PhysicalObject) other;
+
+                if (Gdx.input.isKeyPressed(Input.Keys.X) && physical.getBody().getType() == BodyDef.BodyType.DynamicBody) {
+                    hawke.carryObject(physical);
+                } else {
+                    hawke.dropCarriedObject();
                 }
             }
         }

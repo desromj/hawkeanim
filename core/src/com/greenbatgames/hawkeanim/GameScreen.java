@@ -44,6 +44,10 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
 
     public void init()
     {
+        // Init physics world: with gravity
+        world = new World(new Vector2(0, Constants.GRAVITY), true);
+        debugRenderer = new Box2DDebugRenderer();
+
         // Base inits
         this.platforms = new Array<Platform>();
         this.boxes = new Array<Box>();
@@ -51,10 +55,6 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         this.renderer = new ShapeRenderer();
         this.batch = new SpriteBatch();
         this.spawnPoint = new Vector2(80.0f, 240.0f);
-
-        // Add physics world: with gravity
-        world = new World(new Vector2(0, Constants.GRAVITY), true);
-        debugRenderer = new Box2DDebugRenderer();
 
         // World dependent objects
         this.hawke = new Hawke(spawnPoint, world);

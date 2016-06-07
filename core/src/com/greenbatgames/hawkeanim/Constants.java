@@ -51,6 +51,20 @@ public class Constants
     public static final float HAWKE_MAX_GLIDE_SPEED = 600.0f;
     public static final float HAWKE_JUMP_IMPULSE = 420.0f * HAWKE_DENSITY;
 
+    public static final float HAWKE_VERTEX_X_SCALE = HAWKE_RADIUS;
+    public static final float HAWKE_VERTEX_Y_SCALE = HAWKE_RADIUS * 2.0f;
+
+    public static final Vector2 [] HAWKE_VERTICIES = new Vector2[] {
+            new Vector2(0.75f * HAWKE_VERTEX_X_SCALE / PTM, 0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(0.33f * HAWKE_VERTEX_X_SCALE / PTM, 1.00f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(-0.33f * HAWKE_VERTEX_X_SCALE / PTM, 1.00f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(-0.75f * HAWKE_VERTEX_X_SCALE / PTM, 0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(-0.75f * HAWKE_VERTEX_X_SCALE / PTM, -0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(-0.33f * HAWKE_VERTEX_X_SCALE / PTM, -1.00f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(0.33f * HAWKE_VERTEX_X_SCALE / PTM, -1.00f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(0.75f * HAWKE_VERTEX_X_SCALE / PTM, -0.67f * HAWKE_VERTEX_Y_SCALE / PTM)
+    };
+
     public static final Color PLATFORM_COLOR = Color.BLUE;
     public static final float PLATFORM_COLLISION_LEEWAY = WORLD_WIDTH / 960.0f;
     public static final float DISABLE_COLLISION_FOR_PLATFORM = 0.25f;
