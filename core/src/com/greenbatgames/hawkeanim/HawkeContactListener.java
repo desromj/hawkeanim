@@ -91,6 +91,33 @@ public class HawkeContactListener implements ContactListener
                     hawke.dropCarriedObject();
                 }
             }
+        } else {
+
+            Object first = contact.getFixtureA().getBody().getUserData();
+            Object second = contact.getFixtureB().getBody().getUserData();
+
+            if ((first instanceof Platform && second instanceof Box) || (first instanceof Box && second instanceof Platform))
+            {
+                Box box;
+                Platform platform;
+
+                if (first instanceof Box) {
+                    box = (Box) first;
+                    platform = (Platform) second;
+                } else {
+                    box = (Box) second;
+                    platform = (Platform) first;
+                }
+
+                // Disable boxes colliding upwards with one-way platforms
+                if (platform.isOneWay() && (box.getPosition().y < platform.top - Constants.PLATFORM_COLLISION_LEEWAY))
+                {
+                    Gdx.app.debug("Contact", "Box Bottom: " + box.getBody().getPosition());
+                    Gdx.app.debug("Contact", "Platform Top: " + (platform.top - Constants.PLATFORM_COLLISION_LEEWAY));
+
+                    contact.setEnabled(false);
+                }
+            }
         }
     }
 

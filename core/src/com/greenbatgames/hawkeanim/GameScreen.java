@@ -65,7 +65,8 @@ public class GameScreen extends ScreenAdapter implements InputProcessor
         platforms.add(new Platform(800.0f, 420.0f, 540.0f, 25.0f, world, true));
 
         // Init boxes
-        boxes.add(new Box(870.0f, 480.0f, 120.0f, 120.0f, world));
+        boxes.add(new MediumBox(870.0f, 500.0f, world));
+        boxes.add(new SmallBox(400.0f, 60.0f, world));
 
         // Finalize
         Gdx.input.setInputProcessor(this);

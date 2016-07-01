@@ -1,8 +1,11 @@
 package com.greenbatgames.hawkeanim;
 
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 
 /**
  * Created by Quiv on 28-05-2016.
@@ -14,6 +17,16 @@ public class Utils
     public static boolean almostEqualTo(float first, float second, float variance)
     {
         return Math.abs(first - second) < variance;
+    }
+
+    public static float getMassRatio(Body first, Body second, boolean getFirst)
+    {
+        float firstRatio = first.getMass() / (first.getMass() + second.getMass());
+        float secondRatio = second.getMass() / (first.getMass() + second.getMass());
+
+        if (getFirst)
+            return firstRatio;
+        return secondRatio;
     }
 
     public static boolean contactHasHawke(Contact contact)

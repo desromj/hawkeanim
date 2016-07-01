@@ -41,7 +41,7 @@ public class Constants
     public static final Color HAWKE_COLOR = Color.BROWN;
     public static final Color HAWKE_TEXT_COLOR = Color.WHITE;
     public static final float HAWKE_TEXT_SCALE = 2.0f;
-    public static final float HAWKE_DELAY_BETWEEN_FLAPS = GRAVITY / -40.0f;
+    public static final float HAWKE_DELAY_BETWEEN_FLAPS = GRAVITY / -50.0f;
 
     public static final float HAWKE_IDLE_SPEED_THRESHOLD = 25.0f;
     public static final float HAWKE_WALK_SPEED = 400.0f;
@@ -49,28 +49,33 @@ public class Constants
     public static final float HAWKE_GLIDE_WALK_SPEED = 15.0f;
     public static final float HAWKE_GLIDE_RUN_SPEED = 40.0f;
     public static final float HAWKE_MAX_GLIDE_SPEED = 600.0f;
-    public static final float HAWKE_JUMP_IMPULSE = 420.0f * HAWKE_DENSITY;
+    public static final float HAWKE_JUMP_IMPULSE = 500.0f * HAWKE_DENSITY;
 
     public static final float HAWKE_VERTEX_X_SCALE = HAWKE_RADIUS;
     public static final float HAWKE_VERTEX_Y_SCALE = HAWKE_RADIUS * 2.0f;
 
     public static final Vector2 [] HAWKE_VERTICIES = new Vector2[] {
-            new Vector2(0.75f * HAWKE_VERTEX_X_SCALE / PTM, 0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(0.90f * HAWKE_VERTEX_X_SCALE / PTM, 0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
             new Vector2(0.33f * HAWKE_VERTEX_X_SCALE / PTM, 1.00f * HAWKE_VERTEX_Y_SCALE / PTM),
             new Vector2(-0.33f * HAWKE_VERTEX_X_SCALE / PTM, 1.00f * HAWKE_VERTEX_Y_SCALE / PTM),
-            new Vector2(-0.75f * HAWKE_VERTEX_X_SCALE / PTM, 0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
-            new Vector2(-0.75f * HAWKE_VERTEX_X_SCALE / PTM, -0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(-0.90f * HAWKE_VERTEX_X_SCALE / PTM, 0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
+            new Vector2(-0.90f * HAWKE_VERTEX_X_SCALE / PTM, -0.67f * HAWKE_VERTEX_Y_SCALE / PTM),
             new Vector2(-0.33f * HAWKE_VERTEX_X_SCALE / PTM, -1.00f * HAWKE_VERTEX_Y_SCALE / PTM),
             new Vector2(0.33f * HAWKE_VERTEX_X_SCALE / PTM, -1.00f * HAWKE_VERTEX_Y_SCALE / PTM),
-            new Vector2(0.75f * HAWKE_VERTEX_X_SCALE / PTM, -0.67f * HAWKE_VERTEX_Y_SCALE / PTM)
+            new Vector2(0.90f * HAWKE_VERTEX_X_SCALE / PTM, -0.67f * HAWKE_VERTEX_Y_SCALE / PTM)
     };
 
-    public static final float WOBBLE_ROOM = WORLD_WIDTH / 1000f;
+    public static final float WOBBLE_ROOM = WORLD_WIDTH / 16000f;
 
     public static final Color PLATFORM_COLOR = Color.BLUE;
     public static final float PLATFORM_COLLISION_LEEWAY = WORLD_WIDTH / 960.0f;
     public static final float DISABLE_COLLISION_FOR_PLATFORM = 0.25f;
     public static final float PLATFORM_EDGE_LEEWAY = HAWKE_RADIUS / 1.5f;
+
+    public static final float SMALL_BOX_WIDTH = 80f;
+    public static final float SMALL_BOX_HEIGHT = 50f;
+    public static final float MEDIUM_BOX_WIDTH = 120f;
+    public static final float MEDIUM_BOX_HEIGHT = 120f;
 
     public static final Color BOX_COLOR = Color.FIREBRICK;
 

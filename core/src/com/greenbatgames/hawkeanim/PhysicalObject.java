@@ -63,4 +63,9 @@ public abstract class PhysicalObject
     public Body getBody() {
         return body;
     }
+
+    public float getBottom() { return this.position.y - this.height / 2.0f; }
+    public float getTop() { return this.position.y + this.height / 2.0f; }
+    public float getLeft() { return this.position.x - this.width / 2.0f; }
+    public float getRight() { return this.position.x + this.width / 2.0f; }
 }

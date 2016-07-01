@@ -10,15 +10,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
 
 /**
- * Created by Quiv on 2016-05-18.
+ * Hawke is the main player character of the game
  */
 public class Hawke
 {
@@ -138,10 +136,40 @@ public class Hawke
 
         this.gliding = !this.grounded && !this.flapping && Gdx.input.isKeyPressed(Input.Keys.Z);
 
+        // Idle/Walking/Running movement controls
+        this.move();
+
+        // Cling horizontal velocity of grabbed objects if they are not at rest
+        if (!Gdx.input.isKeyPressed(Input.Keys.X)) {
+            if (this.carried != null
+                    && Math.abs(this.body.getPosition().dst(this.carried.getBody().getPosition())) > this.contactDist + Constants.WOBBLE_ROOM)
+            {
+                this.dropCarriedObject();
+            }
+        }
+
+        if (this.carrying && this.carried != null && !this.carried.isAtRest()) {
+            carried.getBody().setLinearVelocity(
+                    this.body.getLinearVelocity().x,
+                    this.body.getLinearVelocity().y
+            );
+        }
+
+        // Tweak the body while holding down so it does not come to rest
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN))
+            this.body.setAwake(true);
+
+        // Set what the next animation state should be
+        this.animationState = nextAnimationState();
+
+        this.lastPosition.set(this.position.x, this.position.y);
+    }
+
+    private void move()
+    {
         // Check left/right movement keys for X velocity
         boolean running = (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
 
-        // Idle/Walking/Running movement controls
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             if (gliding)
             {
@@ -230,37 +258,13 @@ public class Hawke
                 );
             }
         }
-
-        // Cling horizontal velocity of grabbed objects if they are not at rest
-        if (!Gdx.input.isKeyPressed(Input.Keys.X)
-                || (this.carried != null
-                    && Math.abs(this.body.getPosition().dst(this.carried.getBody().getPosition())) > this.contactDist + Constants.WOBBLE_ROOM / 4f))
-        {
-            this.dropCarriedObject();
-        }
-        
-        if (this.carrying && this.carried != null && !this.carried.isAtRest()) {
-            carried.getBody().setLinearVelocity(
-                    this.body.getLinearVelocity().x,
-                    carried.getBody().getLinearVelocity().y
-            );
-        }
-
-        // Tweak the body while holding down so it does not come to rest
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN))
-            this.body.setAwake(true);
-
-        // Set what the next animation state should be
-        this.animationState = nextAnimationState();
-
-        this.lastPosition.set(this.position.x, this.position.y);
     }
 
     /**
      * Logic to determine what the next animation state should be set
      * to, based on velocity and boolean flags grounded and flapping
      *
-     * @return
+     * @return The Animation State this object should be in, based off its movement boolean flags
      */
     private AnimationState nextAnimationState()
     {
@@ -354,8 +358,14 @@ public class Hawke
             // apply the flapping force upward
             if (carrying && carried != null) {
 
-                float hawkeRatio = this.body.getMass() / (this.body.getMass() + carried.getBody().getMass());
-                float carriedRatio = carried.getBody().getMass() / (this.body.getMass() + carried.getBody().getMass());
+                // Cancel gravity effect of carried object
+                carried.getBody().setLinearVelocity(
+                        carried.getBody().getLinearVelocity().x,
+                        0f
+                );
+
+                float hawkeRatio = Utils.getMassRatio(this.body, carried.getBody(), true);
+                float carriedRatio = Utils.getMassRatio(this.body, carried.getBody(), false);
 
                 this.body.applyForceToCenter(0f, Constants.HAWKE_JUMP_IMPULSE * hawkeRatio, true);
                 carried.getBody().applyForceToCenter(0f, Constants.HAWKE_JUMP_IMPULSE * carriedRatio, true);
